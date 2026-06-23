@@ -8,10 +8,10 @@ databases:
     user: flora
     plan: free
     region: oregon
-    ipAllowList: [] # ponytail: free tier exposes only internal/external URLs; we use the internal one.
 
-webServices:
-  - name: flora-api
+services:
+  - type: web
+    name: flora-api
     runtime: node
     plan: free
     region: oregon
