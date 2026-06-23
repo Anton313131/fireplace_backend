@@ -1,2 +1,3 @@
-// ponytail: placeholder for the Bouquet model registry added in later slices.
-export const models = {};
+import { Bouquet } from './Bouquet.js';
+
+export const models = { Bouquet };

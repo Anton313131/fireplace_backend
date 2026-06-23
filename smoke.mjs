@@ -1,5 +1,4 @@
-// ponytail: single HTTP-layer check, not a test suite.
-// Run with: npm run smoke
+// ponytail: HTTP-layer smoke check, not a test suite.
 process.env.NODE_ENV = 'production';
 const { app } = await import('./app.js');
 const { errorHandler } = await import('./middleware/errorHandler.js');
@@ -22,32 +21,32 @@ const check = async (label, fn) => {
   }
 };
 
-const get = (path, init) => fetch(`${base.base}${path}`, init).then(async (r) => ({
+const request = (path, init) => fetch(`${base.base}${path}`, init).then(async (r) => ({
   status: r.status,
   body: await r.text(),
   headers: r.headers,
 }));
 
 await check('GET /health -> 200', async () => {
-  const r = await get('/health');
+  const r = await request('/health');
   if (r.status !== 200) throw new Error(`status ${r.status}`);
 });
 
 await check('GET unknown route -> 404 with message', async () => {
-  const r = await get('/nope');
+  const r = await request('/nope');
   if (r.status !== 404) throw new Error(`status ${r.status}`);
   if (!r.body.includes('Route not found')) throw new Error(`body ${r.body}`);
 });
 
 await check('allowed origin gets CORS header', async () => {
-  const r = await get('/health', { headers: { Origin: 'http://localhost:3000' } });
+  const r = await request('/health', { headers: { Origin: 'http://localhost:3000' } });
   if (r.headers.get('access-control-allow-origin') !== 'http://localhost:3000') {
     throw new Error(`cors: ${r.headers.get('access-control-allow-origin')}`);
   }
 });
 
 await check('disallowed origin -> 403', async () => {
-  const r = await get('/health', { headers: { Origin: 'https://evil.example' } });
+  const r = await request('/health', { headers: { Origin: 'https://evil.example' } });
   if (r.status !== 403) throw new Error(`status ${r.status}`);
 });
 
@@ -60,6 +59,27 @@ await check('unexpected error -> 500 with safe body in production', async () => 
   await errorHandler(new Error('leak: db password=hunter2'), {}, res, () => {});
   if (captured.status !== 500) throw new Error(`status ${captured.status}`);
   if (captured.body.message.includes('hunter2')) throw new Error(`leaked: ${captured.body.message}`);
+});
+
+await check('GET /api-docs -> 200 (Swagger UI)', async () => {
+  const r = await request('/api-docs/');
+  if (r.status !== 200) throw new Error(`status ${r.status}`);
+  if (!r.body.includes('Swagger UI')) throw new Error(`not swagger: ${r.body.slice(0, 80)}`);
+});
+
+await check('GET /api/bouquets/abc -> 400 with details', async () => {
+  const r = await request('/api/bouquets/abc');
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Validation failed') throw new Error(`message: ${body.message}`);
+  if (!Array.isArray(body.details) || body.details.length === 0) {
+    throw new Error(`details: ${JSON.stringify(body.details)}`);
+  }
+});
+
+await check('GET /api/bouquets/-1 -> 400 (positive integer required)', async () => {
+  const r = await request('/api/bouquets/-1');
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
 base.server.close();

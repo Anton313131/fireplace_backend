@@ -25,5 +25,7 @@ export const env = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? '',
     apiKey: process.env.CLOUDINARY_API_KEY ?? '',
     apiSecret: process.env.CLOUDINARY_API_SECRET ?? '',
+    folder: process.env.CLOUDINARY_FOLDER ?? 'flora-bouquets',
   },
+  seedImagesDir: process.env.SEED_IMAGES_DIR ?? '',
 };
