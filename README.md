@@ -31,6 +31,7 @@ Required environment variables for the seed:
 - `GET /api/bouquets/:id` — public Bouquet lookup; `400` for invalid id, `404` for absent.
 - `POST /api/bouquets` — administrative create. Requires `Authorization: Bearer <ADMIN_API_KEY>`.
   Multipart fields: `image` (jpeg/png/webp/gif, ≤ 6 MB), `title`, `description`, `price` (positive, ≤ 2 decimal places), `favorite` (boolean, optional, default `false`). Returns `201` with the public Bouquet.
+- `PATCH /api/bouquets/:id/favorite` — administrative favorite toggle. Requires Bearer auth. Body: `{ "favorite": true|false }` (no extra fields). Returns `200` with the updated Bouquet, `404` if absent.
 - `GET /api-docs` — Swagger UI; use the Authorize button to set the Bearer key.
 
 ## Environment variables

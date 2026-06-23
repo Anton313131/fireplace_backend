@@ -49,3 +49,15 @@ export const createBouquet = async (req, res, next) => {
     next(error);
   }
 };
+
+export const setFavorite = async (req, res, next) => {
+  try {
+    const bouquet = await Bouquet.findByPk(req.params.id);
+    if (!bouquet) throw new HttpError(404, 'Bouquet not found');
+    bouquet.favorite = req.body.favorite;
+    await bouquet.save();
+    res.status(200).json(bouquet.toJSON());
+  } catch (error) {
+    next(error);
+  }
+};

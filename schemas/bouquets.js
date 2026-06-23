@@ -22,4 +22,4 @@ export const bouquetUpdateSchema = Joi.object({
 
 export const favoriteUpdateSchema = Joi.object({
   favorite: Joi.boolean().required(),
-});
+}).unknown(false);

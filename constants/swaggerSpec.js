@@ -47,6 +47,14 @@ export const swaggerSpec = {
           favorite: { type: 'boolean', default: false, example: false },
         },
       },
+      FavoriteUpdate: {
+        type: 'object',
+        required: ['favorite'],
+        additionalProperties: false,
+        properties: {
+          favorite: { type: 'boolean', example: true },
+        },
+      },
       Error: {
         type: 'object',
         required: ['message'],
@@ -153,6 +161,63 @@ export const swaggerSpec = {
           },
           '400': {
             description: 'Invalid identifier',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Bouquet not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/bouquets/{id}/favorite': {
+      patch: {
+        summary: 'Set a Bouquet\'s favorite state (administrative)',
+        tags: ['Bouquets'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', minimum: 1 },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/FavoriteUpdate' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Updated Bouquet',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Bouquet' },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid identifier or body',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'Missing or incorrect Bearer token',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },

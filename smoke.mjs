@@ -145,5 +145,52 @@ await check('POST /api/bouquets with non-image file -> 400', async () => {
   if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
+await check('PATCH .../favorite without auth -> 401', async () => {
+  const r = await request('/api/bouquets/1/favorite', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ favorite: true }),
+  });
+  if (r.status !== 401) throw new Error(`status ${r.status}`);
+});
+
+await check('PATCH .../favorite with auth, missing field -> 400', async () => {
+  const r = await request('/api/bouquets/1/favorite', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer dev-key' },
+    body: JSON.stringify({}),
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Validation failed') throw new Error(`message: ${body.message}`);
+});
+
+await check('PATCH .../favorite with non-boolean -> 400', async () => {
+  const r = await request('/api/bouquets/1/favorite', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer dev-key' },
+    body: JSON.stringify({ favorite: 'yes' }),
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
+await check('PATCH .../favorite with extra field -> 400 (unknown(false))', async () => {
+  const r = await request('/api/bouquets/1/favorite', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer dev-key' },
+    body: JSON.stringify({ favorite: true, title: 'nope' }),
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
+await check('PATCH .../favorite with malformed id -> 400', async () => {
+  const r = await request('/api/bouquets/abc/favorite', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer dev-key' },
+    body: JSON.stringify({ favorite: true }),
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
 base.server.close();
 process.exit(failed ? 1 : 0);
