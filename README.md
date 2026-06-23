@@ -50,3 +50,88 @@ Required environment variables for the seed:
 | `CLOUDINARY_API_SECRET` | seed | Cloudinary API secret. |
 | `CLOUDINARY_FOLDER` | no | Cloudinary folder for uploads, defaults to `flora-bouquets`. |
 | `SEED_IMAGES_DIR` | seed | Absolute path to the storefront `img/` directory. |
+
+## Deploying to Render
+
+The repository ships a `render.yaml` Blueprint that provisions both the database
+and the web service in a single step.
+
+### One-time setup
+
+1. **Push the backend to a GitHub repo.** From the `fireplace_backend/`
+   directory:
+   ```bash
+   git init
+   git add .
+   git commit -m "Flora bouquet backend"
+   gh repo create flora-bouquet-backend --private --source=. --push
+   ```
+2. **Create a Blueprint instance.** In Render: **New + → Blueprint**, point it
+   at the new repo, accept `render.yaml`. Render creates the free PostgreSQL
+   instance and the free Node web service with the env vars declared in the
+   blueprint (`NODE_ENV`, `CORS_ORIGIN`, `ADMIN_API_KEY` auto-generated,
+   `CLOUDINARY_FOLDER`).
+3. **Add Cloudinary secrets in the dashboard.** Open the `flora-api` service →
+   *Environment* → add:
+   - `CLOUDINARY_CLOUD_NAME` = `dxuacztvw`
+   - `CLOUDINARY_API_KEY` = your key
+   - `CLOUDINARY_API_SECRET` = your secret
+   - `CLOUDINARY_FOLDER` = `flora-bouquets` (already in the blueprint, no need
+     to duplicate)
+   These are not in `render.yaml` so they never reach git.
+4. **Trigger a deploy.** Render redeploys automatically once the secrets land;
+   wait for **Live** status and tail the logs to see
+   `Database connection successful` followed by `Server listening on port …`.
+
+### Seeding the remote database
+
+The free Render Postgres does not expose a local filesystem, so seeding runs
+from a machine that has the storefront images. Use the **External Database
+URL** from the Render Postgres dashboard and the storefront `img/` path:
+
+```bash
+DATABASE_URL='postgres://flora:…@dpg-….oregon-postgres.render.com/flora_external' \
+SEED_IMAGES_DIR='/absolute/path/to/UMT-markup-practice-Hryhorenko/img' \
+CLOUDINARY_CLOUD_NAME=dxuacztvw \
+CLOUDINARY_API_KEY=… \
+CLOUDINARY_API_SECRET=… \
+npm run seed
+```
+
+Re-running the command is safe: existing titles are skipped, the database is
+not cleared, and Cloudinary assets are reused (not duplicated).
+
+### Verifying the live service
+
+- `https://<flora-api>.onrender.com/health` → `200`
+- `https://<flora-api>.onrender.com/api-docs` → Swagger UI; click *Authorize*
+  and paste the `ADMIN_API_KEY` from the dashboard to exercise the write paths.
+- `https://<flora-api>.onrender.com/api/bouquets` → JSON array.
+
+### Connecting the storefront
+
+1. Set the GitHub repository variable for the storefront:
+   `FLORA_API_BASE_URL` = `https://<flora-api>.onrender.com`
+2. Re-run the Pages deploy workflow. The generated `dist/js/config.js` will
+   now point at the live API. Verify in the browser console: no `db.json`
+   requests, no CORS errors.
+
+### Manual setup (no Blueprint)
+
+If you prefer the click-through flow, create a free Web Service and a free
+PostgreSQL instance separately, then add the env vars from the
+[Environment variables](#environment-variables) table to the web service:
+
+| key | value |
+| --- | --- |
+| `DATABASE_URL` | *Internal Database URL* from the Postgres page |
+| `NODE_VERSION` | `20` |
+| `NODE_ENV` | `production` |
+| `CORS_ORIGIN` | `https://anton313131.github.io` |
+| `ADMIN_API_KEY` | a strong random string (32+ chars) |
+| `CLOUDINARY_CLOUD_NAME` | `dxuacztvw` |
+| `CLOUDINARY_API_KEY` | your key |
+| `CLOUDINARY_API_SECRET` | your secret |
+| `CLOUDINARY_FOLDER` | `flora-bouquets` |
+
+Health-check path: `/health`. Build: `npm ci`. Start: `npm start`.

@@ -1,0 +1,38 @@
+# ponytail: Blueprint for the Flora Bouquet backend.
+# Secrets (CLOUDINARY_*, ADMIN_API_KEY) are set in the Render dashboard after the
+# first deploy — never committed to git. ADMIN_API_KEY uses `generateValue: true`
+# so Render creates a strong random key on first sync.
+databases:
+  - name: flora-pg
+    databaseName: flora
+    user: flora
+    plan: free
+    region: oregon
+    ipAllowList: [] # ponytail: free tier exposes only internal/external URLs; we use the internal one.
+
+webServices:
+  - name: flora-api
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: flora-pg
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: https://anton313131.github.io
+      - key: ADMIN_API_KEY
+        generateValue: true
+      - key: CLOUDINARY_FOLDER
+        value: flora-bouquets
