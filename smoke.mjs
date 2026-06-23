@@ -253,5 +253,20 @@ await check('PUT /:id with non-image file -> 400', async () => {
   if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
+await check('DELETE /:id without auth -> 401', async () => {
+  const r = await request('/api/bouquets/1', { method: 'DELETE' });
+  if (r.status !== 401) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Unauthorized') throw new Error(`message: ${body.message}`);
+});
+
+await check('DELETE /:id with malformed id -> 400', async () => {
+  const r = await request('/api/bouquets/abc', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer dev-key' },
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
 base.server.close();
 process.exit(failed ? 1 : 0);

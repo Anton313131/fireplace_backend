@@ -33,6 +33,7 @@ Required environment variables for the seed:
   Multipart fields: `image` (jpeg/png/webp/gif, ≤ 6 MB), `title`, `description`, `price` (positive, ≤ 2 decimal places), `favorite` (boolean, optional, default `false`). Returns `201` with the public Bouquet.
 - `PUT /api/bouquets/:id` — administrative partial update. Requires Bearer auth. Multipart with any subset of `title`, `description`, `price`, `favorite`, `image`; omitted fields are preserved. Rejects empty payload (no fields and no image) with `400`. On image replacement, the new asset is uploaded, the DB row is updated, then the old Cloudinary asset is removed. Returns `200` with the updated Bouquet, `404` if absent.
 - `PATCH /api/bouquets/:id/favorite` — administrative favorite toggle. Requires Bearer auth. Body: `{ "favorite": true|false }` (no extra fields). Returns `200` with the updated Bouquet, `404` if absent.
+- `DELETE /api/bouquets/:id` — administrative delete. Requires Bearer auth. Removes the row, then best-effort destroys the Cloudinary asset (failure is logged, response stays `204`). Returns `204` (no body), `404` if absent.
 - `GET /api-docs` — Swagger UI; use the Authorize button to set the Bearer key.
 
 ## Environment variables

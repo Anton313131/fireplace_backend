@@ -62,6 +62,25 @@ export const setFavorite = async (req, res, next) => {
   }
 };
 
+export const deleteBouquet = async (req, res, next) => {
+  try {
+    const bouquet = await Bouquet.findByPk(req.params.id);
+    if (!bouquet) throw new HttpError(404, 'Bouquet not found');
+    const { photoPublicId } = bouquet;
+    await bouquet.destroy();
+    if (photoPublicId) {
+      try {
+        await destroyAsset(photoPublicId);
+      } catch (cleanupError) {
+        console.error('Failed to remove Cloudinary asset after delete:', photoPublicId, cleanupError);
+      }
+    }
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateBouquet = async (req, res, next) => {
   try {
     const bouquet = await Bouquet.findByPk(req.params.id);

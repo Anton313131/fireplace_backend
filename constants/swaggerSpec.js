@@ -252,6 +252,56 @@ export const swaggerSpec = {
           },
         },
       },
+      delete: {
+        summary: 'Delete a Bouquet and its media (administrative)',
+        tags: ['Bouquets'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', minimum: 1 },
+          },
+        ],
+        responses: {
+          '204': {
+            description: 'Bouquet deleted (Cloudinary cleanup is best-effort and never changes the response)',
+          },
+          '400': {
+            description: 'Invalid identifier',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'Missing or incorrect Bearer token',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Bouquet not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '500': {
+            description: 'Unexpected server error (database deletion failed)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
     },
     '/api/bouquets/{id}/favorite': {
       patch: {

@@ -14,6 +14,7 @@ import {
   createBouquet,
   setFavorite,
   updateBouquet,
+  deleteBouquet,
 } from '../controllers/bouquetsController.js';
 
 export const bouquetsRouter = Router();
@@ -35,6 +36,12 @@ bouquetsRouter.put(
   validate(bouquetUpdateSchema),
   requireUpdatePayload,
   updateBouquet,
+);
+bouquetsRouter.delete(
+  '/:id',
+  authenticate,
+  validate(bouquetIdParamSchema, 'params'),
+  deleteBouquet,
 );
 bouquetsRouter.patch(
   '/:id/favorite',
