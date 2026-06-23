@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { validate } from '../middleware/validate.js';
+import { validate, requireUpdatePayload } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
 import {
   bouquetIdParamSchema,
   bouquetCreateSchema,
+  bouquetUpdateSchema,
   favoriteUpdateSchema,
 } from '../schemas/bouquets.js';
 import {
@@ -12,6 +13,7 @@ import {
   getBouquet,
   createBouquet,
   setFavorite,
+  updateBouquet,
 } from '../controllers/bouquetsController.js';
 
 export const bouquetsRouter = Router();
@@ -24,6 +26,15 @@ bouquetsRouter.post(
   upload.single('image'),
   validate(bouquetCreateSchema),
   createBouquet,
+);
+bouquetsRouter.put(
+  '/:id',
+  authenticate,
+  validate(bouquetIdParamSchema, 'params'),
+  upload.single('image'),
+  validate(bouquetUpdateSchema),
+  requireUpdatePayload,
+  updateBouquet,
 );
 bouquetsRouter.patch(
   '/:id/favorite',

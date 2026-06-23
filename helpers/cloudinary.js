@@ -30,3 +30,12 @@ export const uploadBuffer = (buffer, { folder, publicId }) => {
     stream.end(buffer);
   });
 };
+
+export const destroyAsset = (publicId) => {
+  if (!configured) {
+    return Promise.reject(
+      new Error('Cloudinary credentials are not configured (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET).'),
+    );
+  }
+  return cloudinary.uploader.destroy(publicId);
+};

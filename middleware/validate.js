@@ -14,3 +14,10 @@ export const validate = (schema, source = 'body') => (req, _res, next) => {
   req[source] = value;
   next();
 };
+
+export const requireUpdatePayload = (req, _res, next) => {
+  if (!req.file && req.body && Object.keys(req.body).length === 0) {
+    return next(new HttpError(400, 'At least one field or an image is required'));
+  }
+  next();
+};

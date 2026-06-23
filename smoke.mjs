@@ -192,5 +192,66 @@ await check('PATCH .../favorite with malformed id -> 400', async () => {
   if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
+await check('PUT /:id without auth -> 401', async () => {
+  const r = await request('/api/bouquets/1', { method: 'PUT' });
+  if (r.status !== 401) throw new Error(`status ${r.status}`);
+});
+
+await check('PUT /:id with auth, empty body + no file -> 400', async () => {
+  const r = await request('/api/bouquets/1', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer dev-key' },
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (!body.message.includes('At least one field')) throw new Error(`message: ${body.message}`);
+});
+
+await check('PUT /:id with auth, invalid body -> 400', async () => {
+  const form = new FormData();
+  form.append('price', '-1');
+  const r = await request('/api/bouquets/1', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
+await check('PUT /:id with extra field -> 400 (unknown(false))', async () => {
+  const form = new FormData();
+  form.append('title', 'x');
+  form.append('bogus', 'nope');
+  const r = await request('/api/bouquets/1', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
+await check('PUT /:id with malformed id -> 400', async () => {
+  const form = new FormData();
+  form.append('title', 'x');
+  const r = await request('/api/bouquets/abc', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
+await check('PUT /:id with non-image file -> 400', async () => {
+  const form = new FormData();
+  form.append('image', new Blob(['hello'], { type: 'text/plain' }), 'x.txt');
+  form.append('title', 'x');
+  const r = await request('/api/bouquets/1', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
 base.server.close();
 process.exit(failed ? 1 : 0);

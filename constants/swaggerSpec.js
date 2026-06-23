@@ -47,6 +47,16 @@ export const swaggerSpec = {
           favorite: { type: 'boolean', default: false, example: false },
         },
       },
+      BouquetUpdate: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          title: { type: 'string', example: 'Spring Elegance (renamed)' },
+          description: { type: 'string', example: 'Updated description text.' },
+          price: { type: 'number', format: 'double', minimum: 0.01, example: 39.5 },
+          favorite: { type: 'boolean', example: true },
+        },
+      },
       FavoriteUpdate: {
         type: 'object',
         required: ['favorite'],
@@ -161,6 +171,71 @@ export const swaggerSpec = {
           },
           '400': {
             description: 'Invalid identifier',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Bouquet not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        summary: 'Update a Bouquet (administrative)',
+        tags: ['Bouquets'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', minimum: 1 },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  image: { type: 'string', format: 'binary', description: 'Optional replacement image (jpeg/png/webp/gif, ≤ 6 MB).' },
+                  title: { $ref: '#/components/schemas/BouquetUpdate/properties/title' },
+                  description: { $ref: '#/components/schemas/BouquetUpdate/properties/description' },
+                  price: { $ref: '#/components/schemas/BouquetUpdate/properties/price' },
+                  favorite: { $ref: '#/components/schemas/BouquetUpdate/properties/favorite' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Updated Bouquet',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Bouquet' },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid identifier, body, file type, file size, or empty payload',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'Missing or incorrect Bearer token',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },

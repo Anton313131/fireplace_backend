@@ -18,7 +18,7 @@ export const bouquetUpdateSchema = Joi.object({
   description: Joi.string().trim().min(1).max(2000),
   price: Joi.number().positive().precision(2),
   favorite: Joi.boolean(),
-}).min(1);
+}).unknown(false);
 
 export const favoriteUpdateSchema = Joi.object({
   favorite: Joi.boolean().required(),
