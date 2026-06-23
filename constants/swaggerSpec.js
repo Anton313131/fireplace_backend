@@ -6,6 +6,13 @@ export const swaggerSpec = {
     description: 'Public and administrative endpoints for the Flora Bouquet catalogue.',
   },
   components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        description: 'Administrative API key (matches ADMIN_API_KEY).',
+      },
+    },
     schemas: {
       Bouquet: {
         type: 'object',
@@ -28,6 +35,16 @@ export const swaggerSpec = {
           favorite: { type: 'boolean', example: false },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      BouquetCreate: {
+        type: 'object',
+        required: ['title', 'description', 'price'],
+        properties: {
+          title: { type: 'string', example: 'Spring Elegance' },
+          description: { type: 'string', example: 'A delicate blend of peonies, tulips, and roses.' },
+          price: { type: 'number', format: 'double', minimum: 0.01, example: 35.0 },
+          favorite: { type: 'boolean', default: false, example: false },
         },
       },
       Error: {
@@ -58,6 +75,55 @@ export const swaggerSpec = {
                   type: 'array',
                   items: { $ref: '#/components/schemas/Bouquet' },
                 },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create a Bouquet (administrative)',
+        tags: ['Bouquets'],
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['image', 'title', 'description', 'price'],
+                properties: {
+                  image: { type: 'string', format: 'binary', description: 'Image file (jpeg, png, webp, gif) up to 6 MB.' },
+                  title: { $ref: '#/components/schemas/BouquetCreate/properties/title' },
+                  description: { $ref: '#/components/schemas/BouquetCreate/properties/description' },
+                  price: { $ref: '#/components/schemas/BouquetCreate/properties/price' },
+                  favorite: { $ref: '#/components/schemas/BouquetCreate/properties/favorite' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Bouquet created',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Bouquet' },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid input, missing image, wrong type, or oversize file',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'Missing or incorrect Bearer token',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
               },
             },
           },

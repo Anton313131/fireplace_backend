@@ -82,5 +82,68 @@ await check('GET /api/bouquets/-1 -> 400 (positive integer required)', async () 
   if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
+await check('POST /api/bouquets without auth -> 401', async () => {
+  const r = await request('/api/bouquets', { method: 'POST' });
+  if (r.status !== 401) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Unauthorized') throw new Error(`message: ${body.message}`);
+});
+
+await check('POST /api/bouquets with wrong Bearer -> 401', async () => {
+  const r = await request('/api/bouquets', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer wrong-key' },
+  });
+  if (r.status !== 401) throw new Error(`status ${r.status}`);
+});
+
+await check('POST /api/bouquets with auth but invalid body -> 400', async () => {
+  const form = new FormData();
+  form.append('image', new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' }), 'x.jpg');
+  form.append('title', 'X');
+  form.append('description', 'd');
+  form.append('price', '-5');
+  const r = await request('/api/bouquets', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Validation failed') throw new Error(`message: ${body.message}`);
+  if (!Array.isArray(body.details) || body.details.length === 0) {
+    throw new Error(`details: ${JSON.stringify(body.details)}`);
+  }
+});
+
+await check('POST /api/bouquets with auth but no image -> 400', async () => {
+  const form = new FormData();
+  form.append('title', 'No Image Bouquet');
+  form.append('description', 'd');
+  form.append('price', '10.00');
+  const r = await request('/api/bouquets', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (!body.message.includes('Image file is required')) throw new Error(`message: ${body.message}`);
+});
+
+await check('POST /api/bouquets with non-image file -> 400', async () => {
+  const form = new FormData();
+  form.append('image', new Blob(['hello'], { type: 'text/plain' }), 'x.txt');
+  form.append('title', 'Wrong Type');
+  form.append('description', 'd');
+  form.append('price', '10.00');
+  const r = await request('/api/bouquets', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer dev-key' },
+    body: form,
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
 base.server.close();
 process.exit(failed ? 1 : 0);

@@ -1,9 +1,22 @@
 import { Router } from 'express';
 import { validate } from '../middleware/validate.js';
-import { bouquetIdParamSchema } from '../schemas/bouquets.js';
-import { listBouquets, getBouquet } from '../controllers/bouquetsController.js';
+import { authenticate } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
+import { bouquetIdParamSchema, bouquetCreateSchema } from '../schemas/bouquets.js';
+import {
+  listBouquets,
+  getBouquet,
+  createBouquet,
+} from '../controllers/bouquetsController.js';
 
 export const bouquetsRouter = Router();
 
 bouquetsRouter.get('/', listBouquets);
 bouquetsRouter.get('/:id', validate(bouquetIdParamSchema, 'params'), getBouquet);
+bouquetsRouter.post(
+  '/',
+  authenticate,
+  upload.single('image'),
+  validate(bouquetCreateSchema),
+  createBouquet,
+);
