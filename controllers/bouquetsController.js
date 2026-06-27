@@ -8,10 +8,26 @@ const { Bouquet } = models;
 const slugify = (s) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) || 'bouquet';
 
-export const listBouquets = async (_req, res, next) => {
+export const listBouquets = async (req, res, next) => {
   try {
-    const items = await Bouquet.findAll({ order: [['id', 'ASC']] });
-    res.status(200).json(items.map((b) => b.toJSON()));
+    const { favorite, page, limit } = req.query;
+    const where = favorite === undefined ? {} : { favorite };
+    const order = [['id', 'ASC']];
+
+    if (page === undefined || limit === undefined) {
+      const items = await Bouquet.findAll({ where, order });
+      return res.status(200).json(items.map((b) => b.toJSON()));
+    }
+
+    const offset = (page - 1) * limit;
+    const { rows, count } = await Bouquet.findAndCountAll({ where, order, offset, limit });
+    res.status(200).json({
+      data: rows.map((b) => b.toJSON()),
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (error) {
     next(error);
   }

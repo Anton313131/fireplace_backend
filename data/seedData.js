@@ -1,6 +1,5 @@
 // ponytail: 11 unique Flora catalogue records. Duplicates in source db.json dropped per PRD.
-export const seedBouquets = [
-  {
+export const seedBouquets = [  {
     title: 'Spring Elegance',
     description: 'A delicate blend of peonies, tulips, and roses - perfect for springtime gifting and bright smiles.',
     price: '35.00',
@@ -76,5 +75,21 @@ export const seedBouquets = [
     price: '37.00',
     favorite: false,
     image: 'bouquet-8.jpg',
+  },
+];
+
+// ponytail: 3 unique storefront testimonials; duplicate mock entries dropped.
+export const seedTestimonials = [
+  {
+    name: 'Emma T.',
+    text: 'Flora made my anniversary unforgettable with their beautiful arrangement!',
+  },
+  {
+    name: 'Daniel R.',
+    text: 'Absolutely stunning bouquet! It looked even better than the photo and arrived right on time.',
+  },
+  {
+    name: 'Olivia M.',
+    text: 'The service was exceptional, and the flowers were fresh!',
   },
 ];

@@ -5,6 +5,7 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { healthRouter } from './routes/health.js';
 import { bouquetsRouter } from './routes/bouquets.js';
+import { testimonialsRouter } from './routes/testimonials.js';
 import { apiDocsRouter } from './routes/apiDocs.js';
 import './models/index.js';
 
@@ -16,6 +17,7 @@ app.use(corsMiddleware);
 
 app.use('/health', healthRouter);
 app.use('/api/bouquets', bouquetsRouter);
+app.use('/api/testimonials', testimonialsRouter);
 app.use('/api-docs', apiDocsRouter);
 
 app.use(notFoundHandler);

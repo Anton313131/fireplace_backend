@@ -77,21 +77,77 @@ export const swaggerSpec = {
           },
         },
       },
+      BouquetPage: {
+        type: 'object',
+        required: ['data', 'total', 'page', 'limit', 'totalPages'],
+        properties: {
+          data: { type: 'array', items: { $ref: '#/components/schemas/Bouquet' } },
+          total: { type: 'integer', example: 8 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 4 },
+          totalPages: { type: 'integer', example: 2 },
+        },
+      },
+      Testimonial: {
+        type: 'object',
+        required: ['id', 'name', 'text', 'createdAt', 'updatedAt'],
+        properties: {
+          id: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'Emma T.' },
+          text: { type: 'string', example: 'Flora made my anniversary unforgettable!' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      TestimonialCreate: {
+        type: 'object',
+        required: ['name', 'text'],
+        additionalProperties: false,
+        properties: {
+          name: { type: 'string', minLength: 1, maxLength: 100, example: 'Emma T.' },
+          text: { type: 'string', minLength: 1, maxLength: 1000, example: 'Flora made my anniversary unforgettable!' },
+        },
+      },
     },
   },
   paths: {
     '/api/bouquets': {
       get: {
-        summary: 'List all Bouquets',
+        summary: 'List Bouquets with optional filtering and pagination',
         tags: ['Bouquets'],
+        parameters: [
+          {
+            name: 'favorite',
+            in: 'query',
+            required: false,
+            schema: { type: 'boolean' },
+            description: 'Filter by favorite state. Omit to return all.',
+          },
+          {
+            name: 'page',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', minimum: 1 },
+            description: '1-based page number. Must be used together with limit.',
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', minimum: 1, maximum: 100 },
+            description: 'Page size. Must be used together with page.',
+          },
+        ],
         responses: {
           '200': {
-            description: 'Array of Bouquets',
+            description: 'Without pagination: a plain JSON array of Bouquets. With page+limit: a paginated envelope.',
             content: {
               'application/json': {
                 schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Bouquet' },
+                  oneOf: [
+                    { type: 'array', items: { $ref: '#/components/schemas/Bouquet' } },
+                    { $ref: '#/components/schemas/BouquetPage' },
+                  ],
                 },
               },
             },
@@ -351,6 +407,52 @@ export const swaggerSpec = {
           },
           '404': {
             description: 'Bouquet not found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/testimonials': {
+      get: {
+        summary: 'List all Testimonials',
+        tags: ['Testimonials'],
+        responses: {
+          '200': {
+            description: 'Array of Testimonials',
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/Testimonial' } },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Submit a Testimonial (public)',
+        tags: ['Testimonials'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/TestimonialCreate' },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Testimonial created',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Testimonial' },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid body',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },

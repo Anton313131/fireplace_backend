@@ -2,11 +2,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sequelize } from '../data/database.js';
 import { models } from '../models/index.js';
-import { seedBouquets } from '../data/seedData.js';
+import { seedBouquets, seedTestimonials } from '../data/seedData.js';
 import { uploadBuffer } from '../helpers/cloudinary.js';
 import { env } from '../data/env.js';
 
-const { Bouquet } = models;
+const { Bouquet, Testimonial } = models;
 
 const slugify = (value) =>
   value
@@ -59,6 +59,19 @@ const main = async () => {
   }
 
   console.log(`Seed complete: ${created} added, ${skipped} skipped`);
+
+  let testimonialsCreated = 0;
+  let testimonialsSkipped = 0;
+  for (const record of seedTestimonials) {
+    const existing = await Testimonial.findOne({ where: { name: record.name, text: record.text } });
+    if (existing) {
+      testimonialsSkipped += 1;
+      continue;
+    }
+    await Testimonial.create({ name: record.name, text: record.text });
+    testimonialsCreated += 1;
+  }
+  console.log(`Testimonials seed complete: ${testimonialsCreated} added, ${testimonialsSkipped} skipped`);
 };
 
 main()

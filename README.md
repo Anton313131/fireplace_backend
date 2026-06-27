@@ -17,7 +17,8 @@ and exits with code 1.
 ## Seeding the catalogue
 
 `npm run seed` uploads the 11 unique storefront records to Cloudinary and inserts
-them into the database. Re-running skips records whose title already exists.
+them into the database, then seeds the storefront testimonials. Re-running skips
+bouquets whose title already exists and testimonials whose name+text already exist.
 
 Required environment variables for the seed:
 - `DATABASE_URL` (any reachable PostgreSQL, including Render's External Database URL)
@@ -27,13 +28,18 @@ Required environment variables for the seed:
 ## Endpoints
 
 - `GET /health` — public liveness probe, returns `200`.
-- `GET /api/bouquets` — public list of all Bouquets, plain JSON array.
+- `GET /api/bouquets` — public list. Optional query params: `favorite` (boolean)
+  filters by favorite state; `page` (≥1) + `limit` (1–100) enable pagination. Without
+  pagination params returns a plain JSON array; with them returns
+  `{ data, total, page, limit, totalPages }`.
 - `GET /api/bouquets/:id` — public Bouquet lookup; `400` for invalid id, `404` for absent.
 - `POST /api/bouquets` — administrative create. Requires `Authorization: Bearer <ADMIN_API_KEY>`.
   Multipart fields: `image` (jpeg/png/webp/gif, ≤ 6 MB), `title`, `description`, `price` (positive, ≤ 2 decimal places), `favorite` (boolean, optional, default `false`). Returns `201` with the public Bouquet.
 - `PUT /api/bouquets/:id` — administrative partial update. Requires Bearer auth. Multipart with any subset of `title`, `description`, `price`, `favorite`, `image`; omitted fields are preserved. Rejects empty payload (no fields and no image) with `400`. On image replacement, the new asset is uploaded, the DB row is updated, then the old Cloudinary asset is removed. Returns `200` with the updated Bouquet, `404` if absent.
 - `PATCH /api/bouquets/:id/favorite` — administrative favorite toggle. Requires Bearer auth. Body: `{ "favorite": true|false }` (no extra fields). Returns `200` with the updated Bouquet, `404` if absent.
 - `DELETE /api/bouquets/:id` — administrative delete. Requires Bearer auth. Removes the row, then best-effort destroys the Cloudinary asset (failure is logged, response stays `204`). Returns `204` (no body), `404` if absent.
+- `GET /api/testimonials` — public list of all Testimonials, plain JSON array (`id`, `name`, `text`, timestamps).
+- `POST /api/testimonials` — public create. JSON body: `{ "name": string (1–100), "text": string (1–1000) }`. Returns `201` with the created Testimonial.
 - `GET /api-docs` — Swagger UI; use the Authorize button to set the Bearer key.
 
 ## Environment variables

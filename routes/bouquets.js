@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
 import {
   bouquetIdParamSchema,
+  bouquetQuerySchema,
   bouquetCreateSchema,
   bouquetUpdateSchema,
   favoriteUpdateSchema,
@@ -19,7 +20,7 @@ import {
 
 export const bouquetsRouter = Router();
 
-bouquetsRouter.get('/', listBouquets);
+bouquetsRouter.get('/', validate(bouquetQuerySchema, 'query'), listBouquets);
 bouquetsRouter.get('/:id', validate(bouquetIdParamSchema, 'params'), getBouquet);
 bouquetsRouter.post(
   '/',

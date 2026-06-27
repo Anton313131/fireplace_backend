@@ -6,6 +6,12 @@ export const bouquetIdParamSchema = Joi.object({
   id: Joi.number().integer().positive().required(),
 });
 
+export const bouquetQuerySchema = Joi.object({
+  favorite: Joi.boolean(),
+  page: Joi.number().integer().min(1),
+  limit: Joi.number().integer().min(1).max(100),
+}).unknown(false);
+
 export const bouquetCreateSchema = Joi.object({
   title: requiredString(200),
   description: requiredString(2000),
