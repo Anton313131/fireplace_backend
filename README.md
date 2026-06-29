@@ -40,6 +40,7 @@ Required environment variables for the seed:
 - `DELETE /api/bouquets/:id` — administrative delete. Requires Bearer auth. Removes the row, then best-effort destroys the Cloudinary asset (failure is logged, response stays `204`). Returns `204` (no body), `404` if absent.
 - `GET /api/testimonials` — public list of all Testimonials, plain JSON array (`id`, `name`, `text`, timestamps).
 - `POST /api/testimonials` — public create. JSON body: `{ "name": string (1–100), "text": string (1–1000) }`. Returns `201` with the created Testimonial.
+- `POST /api/orders` — public create. JSON body: `{ "bouquetId": int, "quantity"?: int (≥1, default 1), "name": string (1–100), "phone": string (1–50), "address"?: string, "message"?: string }`. Returns `201` with the created Order.
 - `GET /api-docs` — Swagger UI; use the Authorize button to set the Bearer key.
 
 ## Environment variables

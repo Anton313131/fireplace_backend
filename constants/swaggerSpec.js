@@ -108,6 +108,34 @@ export const swaggerSpec = {
           text: { type: 'string', minLength: 1, maxLength: 1000, example: 'Flora made my anniversary unforgettable!' },
         },
       },
+      Order: {
+        type: 'object',
+        required: ['id', 'bouquetId', 'quantity', 'name', 'phone', 'createdAt', 'updatedAt'],
+        properties: {
+          id: { type: 'integer', example: 1 },
+          bouquetId: { type: 'integer', example: 4 },
+          quantity: { type: 'integer', example: 1 },
+          name: { type: 'string', example: 'Ann' },
+          phone: { type: 'string', example: '+1 (555) 123-4567' },
+          address: { type: 'string', example: '456 Floral Ave, Sydney NSW 2000 AU', nullable: true },
+          message: { type: 'string', example: 'Please deliver after 5pm.', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      OrderCreate: {
+        type: 'object',
+        required: ['bouquetId', 'name', 'phone'],
+        additionalProperties: false,
+        properties: {
+          bouquetId: { type: 'integer', minimum: 1, example: 4 },
+          quantity: { type: 'integer', minimum: 1, default: 1, example: 1 },
+          name: { type: 'string', minLength: 1, maxLength: 100, example: 'Ann' },
+          phone: { type: 'string', minLength: 1, maxLength: 50, example: '+1 (555) 123-4567' },
+          address: { type: 'string', maxLength: 300, example: '456 Floral Ave, Sydney NSW 2000 AU' },
+          message: { type: 'string', maxLength: 1000, example: 'Please deliver after 5pm.' },
+        },
+      },
     },
   },
   paths: {
@@ -448,6 +476,38 @@ export const swaggerSpec = {
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Testimonial' },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid body',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/orders': {
+      post: {
+        summary: 'Place an Order (public)',
+        tags: ['Orders'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/OrderCreate' },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Order created',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Order' },
               },
             },
           },

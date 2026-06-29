@@ -300,5 +300,25 @@ await check('POST /api/testimonials with extra field -> 400 (unknown(false))', a
   if (r.status !== 400) throw new Error(`status ${r.status}`);
 });
 
+await check('POST /api/orders with empty body -> 400', async () => {
+  const r = await request('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+  const body = JSON.parse(r.body);
+  if (body.message !== 'Validation failed') throw new Error(`message: ${body.message}`);
+});
+
+await check('POST /api/orders with extra field -> 400 (unknown(false))', async () => {
+  const r = await request('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bouquetId: 1, name: 'A', phone: '555', bogus: true }),
+  });
+  if (r.status !== 400) throw new Error(`status ${r.status}`);
+});
+
 base.server.close();
 process.exit(failed ? 1 : 0);
